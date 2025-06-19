@@ -221,7 +221,7 @@ class MyAdvancedStrategy(IStrategy):
                 | (df["stoch_k"] > 80)
             ),
         ]
-        df.loc[reduce(lambda x, y: x | y, conditions), "sell"] = 1
+        df.loc[reduce(lambda x, y: x & y, conditions), "sell"] = 1
         return df
 
         #   def custom_stoploss(
