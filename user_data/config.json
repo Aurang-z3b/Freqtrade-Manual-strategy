@@ -1,0 +1,100 @@
+    {
+        "strategy": "MyAdvancedStrategy",
+        "$schema": "https://schema.freqtrade.io/schema.json",
+        "max_open_trades": 6,
+        "stake_currency": "USDT",
+        "stake_amount": 8,
+        "timeframe": "5m",
+        "tradable_balance_ratio": 0.99,
+        "fiat_display_currency": "USD",
+        "dry_run": true,
+        "dry_run_wallet": 50,
+        "cancel_open_orders_on_exit": false,
+        "trading_mode": "spot",
+        "margin_mode": "",
+        "unfilledtimeout": {
+            "entry": 10,
+            "exit": 10,
+            "exit_timeout_count": 0,
+            "unit": "minutes"
+        },
+        "entry_pricing": {
+            "price_side": "same",
+            "use_order_book": true,
+            "order_book_top": 1,
+            "price_last_balance": 0.0,
+            "check_depth_of_market": {
+                "enabled": false,
+                "bids_to_ask_delta": 1
+            }
+        },
+        "exit_pricing": {
+            "price_side": "same",
+            "use_order_book": true,
+            "order_book_top": 1
+        },
+        "exchange": {
+            "use_websocket_for_order_book": false,
+            "use_websocket_for_ticker": false,
+            "use_websocket_for_trades": false,
+            "name": "binance",
+            "type": "spot",
+            "key": "",
+            "secret": "",
+            "ccxt_config": {},
+            "ccxt_async_config": {},
+            "pair_whitelist": [
+                ".*\/USDT"
+            ],
+            "pair_blacklist": [
+                "BNB/.*",
+                "USDC/.*",
+                "FDUSD/.*",
+                "USD/.*",
+                "BUSD/.*",
+                "TUSD/.*"
+            ]
+        },
+        "pairlists": [
+            {
+                "method": "VolumePairList",
+                "number_assets": 200,
+                "sort_key": "quoteVolume",
+                "min_value": 100000,
+                "refresh_period": 1800,
+                "sort_descending": true
+            }
+        ],
+        "telegram": {
+            "enabled": false,
+            "token": "",
+            "chat_id": "",
+            "control": true,
+            "accept_commands_from": [
+                ""
+            ],
+            "trade_notifications": true
+        },
+        "api_server": {
+            "enabled": true,
+            "listen_ip_address": "127.0.0.1",
+            "listen_port": 8081,
+            "verbosity": "error",
+            "enable_openapi": true,
+            "jwt_secret_key": "acf50a18b362bdb27f2fa74a6652e7f6a0e63aba6c02fdb0d0a2f1a421064a9c",
+            "ws_token": "A9VXydIci_Oy-w71novaefAHpnzlfzSEiw",
+            "CORS_origins": [],
+            "username": "zeb",
+            "password": "123"
+        },
+        "logging": {
+            "loglevel": "DEBUG"
+        },
+        "bot_name": "freqtrade",
+        "initial_state": "running",
+        "force_entry_enable": false,
+        "internals": {
+            "process_throttle_secs": 5
+        },
+        "db_url": "sqlite:///tradesv4.dryrun.sqlite"
+    }
