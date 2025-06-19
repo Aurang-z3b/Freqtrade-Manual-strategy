@@ -41,7 +41,7 @@ class MyAdvancedStrategy(IStrategy):
     market_volatility_threshold = 0.02
     min_profit_ratio = 2.5
     volume_spike_threshold = 2
-    trend_strength_threshold = 2
+    trend_strength_threshold = 1
 
     def populate_indicators(self, df: DataFrame, metadata: dict) -> DataFrame:
         df["rsi"] = ta.RSI(df, timeperiod=14)
@@ -173,11 +173,11 @@ class MyAdvancedStrategy(IStrategy):
             (df["rsi_smooth"] < self.buy_rsi_threshold).astype(int)
             + macd_strict_condition.astype(int)
             + (df["quote_volume"] > self.min_quote_volume).astype(int)
-            + (df["volume_ratio"] > self.volume_spike_threshold)
+            + (df["volume_ratio"] > self.volume_spike_threshold).astype(int)
             + (df["confluence_score"] > self.confluence_threshold).astype(int)
             + (df["risk_reward_ratio"] > self.min_profit_ratio).astype(int)
             + (df["market_regime"] > 0).astype(int)
-            + (df["trend"] > self.trend_strength_threshold).astype(int)
+            + (df["trend_strength"] > self.trend_strength_threshold).astype(int)
             + (df["bb_position"] < 0.95).astype(int)
         )
         df["buy"] = 0
@@ -221,7 +221,7 @@ class MyAdvancedStrategy(IStrategy):
                 | (df["stoch_k"] > 80)
             ),
         ]
-        df.loc[reduce(lambda x, y: x & y, conditions), "sell"] = 1
+        df.loc[reduce(lambda x, y: x | y, conditions), "sell"] = 1
         return df
 
         #   def custom_stoploss(
