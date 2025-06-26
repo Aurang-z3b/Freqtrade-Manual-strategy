@@ -145,7 +145,7 @@ class MyAdvancedStrategy(IStrategy):
     def populate_indicators(self, df: DataFrame, metadata: dict) -> DataFrame:
         # Handle NaN values
         df = df.replace([np.inf, -np.inf], np.nan)
-        df = df.fillna(method='ffill')
+        df = df.ffill()
         
         # Calculate RSI with NaN handling
         df["rsi"] = ta.RSI(df, timeperiod=14)
