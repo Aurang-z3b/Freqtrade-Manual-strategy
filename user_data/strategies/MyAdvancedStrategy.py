@@ -20,8 +20,8 @@ class MyAdvancedStrategy(IStrategy):
     minimal_roi = {
         "0": 0.005,
         "5": 0.005,
-        "15": 0.01,
-        "120": 0.05,
+        "15": 0.005,
+        "120": 0.01,
     }
     trailing_stop = True
     trailing_stop_positive = 0.005
@@ -157,8 +157,12 @@ class MyAdvancedStrategy(IStrategy):
         return regime
 
     def populate_buy_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
+        
+        strong_bearish_candle = (df['close'] < df['open']) & ((df['open'] - df['close']) / df['open'] > 0.005)
+        prev_bearish = (df['close'].shift(1) < df['open'].shift(1))
+        curr_not_strong_bearish = ((df['close'] >= df['open']) | ((df['open'] - df['close']) / df['open'] < 0.005))
+        metadata["pair"].replace("/", "")
 
-        pair = metadata["pair"].replace("/", "")
         macd_strict_condition = (
             (df["macd"] > df["macdsignal"])
             & (df["macd"].shift(1) <= df["macdsignal"].shift(1))
@@ -169,6 +173,7 @@ class MyAdvancedStrategy(IStrategy):
             & (df["macd"] > 0)
             & (df["macdsignal"] > 0)
         )
+
         df["condition_score"] = (
             (df["rsi_smooth"] < self.buy_rsi_threshold).astype(int)
             + macd_strict_condition.astype(int)
@@ -179,34 +184,22 @@ class MyAdvancedStrategy(IStrategy):
             + (df["market_regime"] > 0).astype(int)
             + (df["trend_strength"] > self.trend_strength_threshold).astype(int)
             + (df["bb_position"] < 0.95).astype(int)
+            + (df["long_term_trend"] == 1).astype(int)  # Added long term trend bullish filter
         )
+
         df["buy"] = 0
-        condition = (df["condition_score"] >= 6) & (df["rsi_smooth"] <= self.buy_rsi_threshold)
+        condition = (
+            (df["condition_score"] >= 7)
+            & (df["rsi_smooth"] <= self.buy_rsi_threshold)
+            & (~strong_bearish_candle)  # Don't buy on strong bearish candle
+            & (curr_not_strong_bearish)  # Current candle shows strength
+            & (prev_bearish)  # Previous candle was bearish (dump candle)
+        )
+
         df.loc[condition, "buy"] = 1
 
-
-        overlap = df[(df["condition_score"] >= 6) & (df["rsi_smooth"] <= self.buy_rsi_threshold)]
-        logger.info(f"Overlapping candles passing buy criteria {pair} : {len(overlap)}")
-
-        logger.info(
-            f"Buy condition breakdown: RSI < {self.buy_rsi_threshold} passes: {(df['rsi_smooth'] <= self.buy_rsi_threshold).sum()}"  # noqa: E501
-        )
-        logger.info(
-            f"MACD condition passes: {((df['macd'] > df['macdsignal']) | (df['macd_crossover'])).sum()}"  # noqa: E501
-        )
-        logger.info(
-            f"Volume spike passes: {(df['volume_ratio'] > self.volume_spike_threshold).sum()}"
-        )
-        logger.info(
-            f"Confluence passes: {(df['confluence_score'] > self.confluence_threshold).sum()}"
-        )
-        logger.info(
-            f"Risk/reward passes: {(df['risk_reward_ratio'] > self.min_profit_ratio).sum()}"
-        )
-        logger.info(f"Market regime passes: {(df['market_regime'] > 0).sum()}")
-        logger.info(f"Total condition_score passes >=6: {(df['condition_score'] >= 6).sum()}")
-
         return df
+
 
     def populate_sell_trend(self, df: DataFrame, metadata: dict) -> DataFrame:
         conditions = [
